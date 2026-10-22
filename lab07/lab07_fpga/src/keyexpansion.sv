@@ -27,26 +27,34 @@ module keyexpansion(input clk, reset, en,
 
     input_to_state input_to_state(key, keyArr);
 
-    assign wArr[0:3][0][7:0] = keyArr[0][0:3][7:0];
-    assign wArr[0:3][1][7:0] = keyArr[1][0:3][7:0];
-    assign wArr[0:3][2][7:0] = keyArr[2][0:3][7:0];
-    assign wArr[0:3][3][7:0] = keyArr[3][0:3][7:0];
+    genvar i,j;
+
+    for(i=0;i<4;i++) begin
+        for(j=0;j<4;j++) begin
+            assign wArr[i][j][7:0] = keyArr[j][i][7:0];
+        end
+    end
 
     logic [0:3][7:0] tmp0, tmp1, tmp2;
 
-    assign tmp0[0:2][7:0] = wArr[1:3][3][7:0];
+    for(i=0;i<3;i++) begin
+        assign tmp0[i][7:0] = wArr[i+1][3][7:0];
+    end
     assign tmp0[3][7:0] = wArr[0][3][7:0];
 
     subword subword(clk, reset, en, tmp0, tmp1);
 
     assign tmp2 = tmp1 ^ rcon;
-    assign wArr[0:3][4][7:0] = wArr[0:3][0][7:0] ^ tmp2;
 
-    assign wArr[0:3][5][7:0] = wArr[0:3][1][7:0] ^ wArr[0:3][4][7:0];
+    for(i=0;i<4;i++) begin
+        wArr[i][4][7:0] = wArr[i][0][7:0] ^ tmp2[i][7:0];
+    end
 
-    assign wArr[0:3][6][7:0] = wArr[0:3][2][7:0] ^ wArr[0:3][5][7:0];
-
-    assign wArr[0:3][7][7:0] = wArr[0:3][3][7:0] ^ wArr[0:3][6][7:0];
+    for(i=0;i<4) begin
+        for(j=0;j<3;j++) begin
+            assign wArr[i][j+5][7:0] = wArr[i][j+1][7:0] ^ wArr[i][j+4][7:0];
+        end
+    end
 
     state_to_output #(8) state_to_output(wArr, w);
 endmodule
