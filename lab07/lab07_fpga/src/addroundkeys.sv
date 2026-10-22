@@ -10,7 +10,7 @@ module addroundkeys(input  logic [127:0] a,
 
     for (i=0;i<4;i++) begin
         for(j=0;j<4;j++) begin
-            assign yArr[i][j][7:0] = aArr[i][j][7:0] ^ word[j][7:0]
+            assign yArr[i][j][7:0] = aArr[i][j][7:0] ^ word[j][7:0];
         end
     end
     

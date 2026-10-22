@@ -29,14 +29,26 @@ module shiftrows(input  logic [127:0] a,
     logic [0:3][0:3][7:0] aArr, yArr;
 
     input_to_state input_to_state(a, aArr);
-
-    assign yArr[0][0:3][7:0] = aArr[0][0:3][7:0];
-    assign yArr[1][0:2][7:0] = aArr[1][1:3][7:0];
+	
+    assign yArr[0][0][7:0] = aArr[0][0][7:0];
+	assign yArr[0][1][7:0] = aArr[0][1][7:0];
+	assign yArr[0][2][7:0] = aArr[0][2][7:0];
+	assign yArr[0][3][7:0] = aArr[0][3][7:0];
+	
+    assign yArr[1][0][7:0] = aArr[1][1][7:0];
+	assign yArr[1][1][7:0] = aArr[1][2][7:0];
+	assign yArr[1][2][7:0] = aArr[1][3][7:0];
     assign yArr[1][3][7:0] = aArr[1][0][7:0];
-    assign yArr[2][0:1][7:0] = aArr[2][2:3][7:0];
-    assign yArr[2][2:3][7:0] = aArr[2][0:1][7:0];
+	
+    assign yArr[2][0][7:0] = aArr[2][2][7:0];
+	assign yArr[2][1][7:0] = aArr[2][3][7:0];
+	assign yArr[2][2][7:0] = aArr[2][0][7:0];
+    assign yArr[2][3][7:0] = aArr[2][1][7:0];
+	
     assign yArr[3][0][7:0] = aArr[3][3][7:0];
-    assign yArr[3][1:3][7:0]= aArr[3][0:2][7:0];
+    assign yArr[3][1][7:0]= aArr[3][0][7:0];
+	assign yArr[3][2][7:0]= aArr[3][1][7:0];
+	assign yArr[3][3][7:0]= aArr[3][2][7:0];
 
     state_to_output state_to_output(yArr, y);
 

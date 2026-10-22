@@ -88,9 +88,9 @@ module aes_core(input  logic         clk,
     counter #(5, 20) cycleCnter(.clk, .reset(load), .enable(1), .counter(cycleCnt));
     counter #(4, 10) roundCnter(.clk, .reset(load), .enable(cycleCnt == 19), .counter(roundCnt));
 
-    controller controller(.clk, .reset(load), .counter(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
+    controller controller(.clk, .reset(load), .count(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
     
-    keyexpansion KE(.clk, .reset(load), .en(KEen), .key, .round(roundCnt), .w(expKey));
+    keyexpansion temp(.clk, .reset(load), .en(KEen), .key, .round(roundCnt), .w(expKey));
 
     subbytes SB(.clk, .reset(load), .en(SBen), .a(state), .y(SBout));
     shiftrows SR(.a(SRin), .y(SRout));

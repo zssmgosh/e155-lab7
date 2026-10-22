@@ -1,6 +1,6 @@
-module #(parameter WIDTH) flopren (input clk, reset, en, 
-                         input [WIDTH-1:0] d,
-                         output [WIDTH-1:0] q);
+module flopren #(parameter WIDTH=128) (input logic clk, reset, en, 
+                         input logic[WIDTH-1:0] d,
+                         output logic[WIDTH-1:0] q);
     always_ff @(posedge clk, posedge reset)
         if (reset)
             q <= '0;

@@ -7,7 +7,7 @@ module counter #(parameter N=23, MAX_COUNT=10000000)(
     );
 	
     always_ff @(posedge clk, posedge reset)
-		if (~reset)
+		if (reset)
 			begin
 				counter <= 0;
 			end

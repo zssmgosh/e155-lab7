@@ -6,8 +6,11 @@ module keyexpansion(input clk, reset, en,
     logic [0:3][0:3][7:0] keyArr, tmp;
     logic [0:3][0:7][7:0] wArr;
     logic [0:3][7:0] rcon;
+	genvar i,j;
 
-    assign rcon[1:3][7:0] = '0;
+	for(i=0;i<3;i++) begin
+		assign rcon[i+1][7:0] = 8'b0;
+	end
 
     always_comb begin
         case(round)
@@ -27,8 +30,6 @@ module keyexpansion(input clk, reset, en,
 
     input_to_state input_to_state(key, keyArr);
 
-    genvar i,j;
-
     for(i=0;i<4;i++) begin
         for(j=0;j<4;j++) begin
             assign wArr[i][j][7:0] = keyArr[j][i][7:0];
@@ -47,10 +48,10 @@ module keyexpansion(input clk, reset, en,
     assign tmp2 = tmp1 ^ rcon;
 
     for(i=0;i<4;i++) begin
-        wArr[i][4][7:0] = wArr[i][0][7:0] ^ tmp2[i][7:0];
+        assign wArr[i][4][7:0] = wArr[i][0][7:0] ^ tmp2[i][7:0];
     end
 
-    for(i=0;i<4) begin
+    for(i=0;i<4;i++) begin
         for(j=0;j<3;j++) begin
             assign wArr[i][j+5][7:0] = wArr[i][j+1][7:0] ^ wArr[i][j+4][7:0];
         end
