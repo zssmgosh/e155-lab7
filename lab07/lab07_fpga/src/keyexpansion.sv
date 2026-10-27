@@ -1,11 +1,11 @@
-module keyexpansion(input clk, reset, en,
+module keyexpansion(input logic clk, reset, en,
+                    input logic [3:0] round,
                     input  logic [127:0] key,
-                    input  logic [3:0] round,
-                    output logic [256:0] w);
+                    output logic [127:0] w);
 
-    logic [0:3][0:3][7:0] keyArr, tmp;
-    logic [0:3][0:7][7:0] wArr;
+    logic [0:3][0:3][7:0] keyArr, tmp, oldWArr, wArr;
     logic [0:3][7:0] rcon;
+    logic [0:3][7:0] tmp0, tmp1, tmp2;
 	genvar i,j;
 
 	for(i=0;i<3;i++) begin
@@ -30,14 +30,18 @@ module keyexpansion(input clk, reset, en,
 
     input_to_state input_to_state(key, keyArr);
 
-    for(i=0;i<4;i++) begin
-        for(j=0;j<4;j++) begin
-            assign wArr[i][j][7:0] = keyArr[j][i][7:0];
-        end
-    end
+    always_ff @(posedge round)
+        if(reset || (round == 0))
+            // logic for initial key that round 0 takes from
+            for(i=0;i<4;i++) begin
+                for(j=0;j<4;j++) begin
+                    oldWArr[i][j][7:0] <= keyArr[j][i][7:0];
+                end
+            end
+        else
+            oldWArr <= wArr;
 
-    logic [0:3][7:0] tmp0, tmp1, tmp2;
-
+    // logic for newly added keys for a round
     for(i=0;i<3;i++) begin
         assign tmp0[i][7:0] = wArr[i+1][3][7:0];
     end
@@ -57,5 +61,5 @@ module keyexpansion(input clk, reset, en,
         end
     end
 
-    state_to_output #(8) state_to_output(wArr, w);
+    state_to_output #(4) state_to_output(wArr, w);
 endmodule

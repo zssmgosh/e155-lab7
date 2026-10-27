@@ -82,8 +82,7 @@ module aes_core(input  logic         clk,
     logic [4:0] cycleCnt;
     logic [3:0] roundCnt;
     logic SBen, SRen, MCen, ARen, KEen, NSen;
-    logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin;
-    logic [255:0] expKey;
+    logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin, expKey;
 
     counter #(5, 20) cycleCnter(.clk, .reset(load), .enable(1), .counter(cycleCnt));
     counter #(4, 10) roundCnter(.clk, .reset(load), .enable(cycleCnt == 19), .counter(roundCnt));
@@ -95,7 +94,7 @@ module aes_core(input  logic         clk,
     subbytes SB(.clk, .reset(load), .en(SBen), .a(state), .y(SBout));
     shiftrows SR(.a(SRin), .y(SRout));
     mixcolumns MC(.a(MCin), .y(MCout));
-    addroundkeys AR(.a(ARin), .word(), .y(nextState));
+    addroundkeys AR(.a(ARin), .word(expKey), .y(nextState));
 
     always_ff @(posedge clk)
         if(load)
