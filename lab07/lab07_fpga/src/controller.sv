@@ -2,7 +2,7 @@ module controller(input logic clk, reset,
                   input logic [4:0] count,
                   output logic SBen, SRen, MCen, ARen, KEen, NSen);
     always_ff @(posedge clk, negedge reset)
-        if(reset)
+        if(~reset)
             {SBen, SRen, MCen, ARen, KEen, NSen} <= 6'b0;
         else begin
             SBen <= (count < 16);

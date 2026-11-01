@@ -3,17 +3,17 @@ module addroundkeys(input  logic [127:0] a, word,
 
     logic [0:3][0:3][7:0] aArr, wordArr, yArr;
 
-    input_to_state input_to_state(a, aArr);
-    input_to_state input_to_state(word, wordArr);
+    input_to_state input_to_stateA(a, aArr);
+    input_to_state input_to_stateW(word, wordArr);
 
     genvar i, j;
 
     for (i=0;i<4;i++) begin
         for(j=0;j<4;j++) begin
-            assign yArr[i][j][7:0] = aArr[i][j][7:0] ^ word[i][j][7:0];
+            assign yArr[i][j][7:0] = aArr[i][j][7:0] ^ wordArr[i][j][7:0];
         end
     end
 
-    state_to_output state_to_output(y, yArr);
+    state_to_output state_to_output(yArr, y);
 
 endmodule

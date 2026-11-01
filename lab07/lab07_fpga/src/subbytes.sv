@@ -40,7 +40,7 @@ module subbytes(input  logic clk, reset, en,
                 4'hD: begin newr = 2'b11; newc = 2'b01; end
                 4'hE: begin newr = 2'b11; newc = 2'b10; end
                 4'hF: begin newr = 2'b11; newc = 2'b11; end
-                default: begin r = 2'b00; newc = 2'b00; end
+                default: begin newr = 2'b00; newc = 2'b00; end
             endcase
 
         sbox sbox(aArr[r][c][7:0], yArr[r][c][7:0]); 

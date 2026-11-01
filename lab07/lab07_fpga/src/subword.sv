@@ -10,7 +10,7 @@ module subword(input   logic clk, reset, en,
         
         counter #(2, 3) sbcnt(clk, reset, en, cnt);
 
-        always_ff @(posedge clk)
+        always_ff @(posedge clk, posedge reset)
             if(reset) 
                 r <= 2'b0;
             else
@@ -23,10 +23,18 @@ module subword(input   logic clk, reset, en,
                 2'h1: newr = 2'b01;
                 2'h2: newr = 2'b10;
                 2'h3: newr = 2'b11;
-                default: r = 2'b00;
+                default: newr = 2'b00;
             endcase
+			
+		logic [7:0] bah, mah;
+			
+		always_comb
+			case(r)
+				2'h0: begin bah = aArr[0]; yArr[0] = mah; end
+				default: begin bah = aArr[2]; yArr[2] = mah; end
+			endcase
 
-        sbox sbox(aArr[r][7:0], yArr[r][7:0]); 
+        sbox sbox(bah, mah); 
 
         state_to_output state_to_output(yArr, y);
 endmodule
