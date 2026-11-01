@@ -31,10 +31,12 @@ module subword(input   logic clk, reset, en,
 		always_comb
 			case(r)
 				2'h0: begin bah = aArr[0]; yArr[0] = mah; end
-				default: begin bah = aArr[2]; yArr[2] = mah; end
+                2'h1: begin bah = aArr[1]; yArr[1] = mah; end
+                2'h2: begin bah = aArr[2]; yArr[2] = mah; end
+                2'h3: begin bah = aArr[3]; yArr[3] = mah; end
+				default: begin bah = aArr[0]; yArr[0] = mah; end
 			endcase
 
         sbox sbox(bah, mah); 
-
         state_to_output state_to_output(yArr, y);
 endmodule

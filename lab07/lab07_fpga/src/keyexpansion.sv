@@ -30,7 +30,22 @@ module keyexpansion(input logic clk, reset, en,
 
     input_to_state input_to_state(key, keyArr);
 
-    always_ff @(posedge round[0], negedge round[0], posedge reset)
+    always_ff @(posedge round[0], posedge reset)
+        if(reset || (round == 0))
+            // logic for initial key that round 0 takes from
+			for(int k=0;k<4;k=k+1) begin
+				for(int j=0;j<4;j=j+1) begin
+					oldWArr[k][j][7:0] <= keyArr[j][k][7:0];
+				end
+			end
+        else begin
+            if (round < 10)
+                oldWArr <= wArr;
+            else
+                oldWArr <= oldWArr;
+            end
+            
+    always_ff @(negedge round[0], posedge reset)
         if(reset || (round == 0))
             // logic for initial key that round 0 takes from
 			for(int k=0;k<4;k=k+1) begin
@@ -56,12 +71,12 @@ module keyexpansion(input logic clk, reset, en,
     assign tmp2 = tmp1 ^ rcon;
 
     for(b=0;b<4;b++) begin
-        assign wArr[b][4][7:0] = wArr[b][0][7:0] ^ tmp2[b][7:0];
+        assign wArr[b][0][7:0] = oldWArr[b][0][7:0] ^ tmp2[b][7:0];
     end
 	
 	for(c=0;c<4;c++) begin
-		for(d=0;d<3;d++)begin
-			assign wArr[c][d+5][7:0] = wArr[c][d+1][7:0] ^ wArr[c][d+4][7:0];
+		for(d=0;d<3;d++) begin
+			assign wArr[c][d+1][7:0] = oldWArr[c][d+1][7:0] ^ wArr[c][d][7:0];
 		end
 	end
 
