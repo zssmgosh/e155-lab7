@@ -79,17 +79,17 @@ module aes_core(input  logic         clk,
                 output logic         done, 
                 output logic [127:0] cyphertext);
 
-    logic [4:0] cycleCnt;
+    logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
     logic SBen, SRen, MCen, ARen, KEen, NSen;
-    logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin, expKey;
+    logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin, oldKey, expKey;
 
-    counter #(5, 20) cycleCnter(.clk, .reset(load), .enable(1), .counter(cycleCnt));
-    counter #(4, 10) roundCnter(.clk, .reset(load), .enable(cycleCnt == 19), .counter(roundCnt));
+    counter #(2, 5) cycleCnter(.clk, .reset(load), .enable(1), .counter(cycleCnt));
+    counter #(4, 10) roundCnter(.clk, .reset(load), .enable(cycleCnt == 5), .counter(roundCnt));
 
     controller controller(.clk, .reset(load), .count(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
     
-    keyexpansion temp(.clk, .reset(load), .en(KEen), .key, .round(roundCnt), .w(expKey));
+    keyexpansion temp(.clk, .reset(load), .en(KEen), .key(), .round(roundCnt), .roundKey(expKey));
 
     subbytes SB(.clk, .reset(load), .en(SBen), .a(state), .y(SBout));
     shiftrows SR(.a(SRin), .y(SRout));
@@ -99,9 +99,11 @@ module aes_core(input  logic         clk,
     always_ff @(posedge clk)
         if(load)
             state <= plaintext;
+            oldKey <= key;
         else
             if(NSen)
                 state <= nextState;
+                oldKey <= expKey;
 
     assign MCres = (roundCnt == 9) ? MCin : MCout;
     flopren #(128) SBSRflop(.clk, .reset(load), .en(SRen), .d(SBout), .q(SRin));

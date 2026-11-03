@@ -1,12 +1,11 @@
 module keyexpansion(input logic clk, reset, en,
                     input logic [3:0] round,
                     input  logic [127:0] key,
-                    output logic [127:0] w);
-
-    logic [0:3][0:3][7:0] keyArr, tmp, oldWArr, wArr;
+                    output logic [127:0] roundKey);
+    logic [0:3][0:3] roundKeyArr, keyArr;
     logic [0:3][7:0] rcon;
     logic [0:3][7:0] tmp0, tmp1, tmp2;
-	genvar i, a, b, c, d;
+	genvar i, a, b;
 
 	for(i=0;i<3;i++) begin
 		assign rcon[i+1][7:0] = 8'b0;
@@ -28,57 +27,39 @@ module keyexpansion(input logic clk, reset, en,
         endcase
     end
 
-    input_to_state input_to_state(key, keyArr);
+    input_to_state #(4) input_to_state(key, keyArr);
 
-    always_ff @(posedge round[0], posedge reset)
-        if(reset || (round == 0))
-            // logic for initial key that round 0 takes from
-			for(int k=0;k<4;k=k+1) begin
-				for(int j=0;j<4;j=j+1) begin
-					oldWArr[k][j][7:0] <= keyArr[j][k][7:0];
-				end
-			end
-        else begin
-            if (round < 10)
-                oldWArr <= wArr;
-            else
-                oldWArr <= oldWArr;
-            end
-            
-    always_ff @(negedge round[0], posedge reset)
-        if(reset || (round == 0))
-            // logic for initial key that round 0 takes from
-			for(int k=0;k<4;k=k+1) begin
-				for(int j=0;j<4;j=j+1) begin
-					oldWArr[k][j][7:0] <= keyArr[j][k][7:0];
-				end
-			end
-        else begin
-            if (round < 10)
-                oldWArr <= wArr;
-            else
-                oldWArr <= oldWArr;
-            end
-
-    // logic for newly added keys for a round
-    for(a=0;a<3;a++) begin
-        assign tmp0[a][7:0] = oldWArr[a+1][3][7:0];
-    end
-    assign tmp0[3][7:0] = wArr[0][3][7:0];
-
+    // rotate word
+    assign tmp0[3][7:0] = keyArr[0][3][7:0];
+    assign tmp0[0][7:0] = keyArr[1][3][7:0];
+    assign tmp0[1][7:0] = keyArr[2][3][7:0];
+    assign tmp0[2][7:0] = keyArr[3][3][7:0];
+    
+    // subword(rotateword)
     subword subword(clk, reset, en, tmp0, tmp1);
-
+    
+    // subword(rotateword)^rcon
     assign tmp2 = tmp1 ^ rcon;
 
-    for(b=0;b<4;b++) begin
-        assign wArr[b][0][7:0] = oldWArr[b][0][7:0] ^ tmp2[b][7:0];
-    end
-	
-	for(c=0;c<4;c++) begin
-		for(d=0;d<3;d++) begin
-			assign wArr[c][d+1][7:0] = oldWArr[c][d+1][7:0] ^ wArr[c][d][7:0];
-		end
-	end
+    assign roundKeyArr[0][0][7:0] = keyArr[0][0][7:0] ^ tmp2[0][7:0];
+    assign roundKeyArr[1][0][7:0] = keyArr[1][0][7:0] ^ tmp2[1][7:0];
+    assign roundKeyArr[2][0][7:0] = keyArr[2][0][7:0] ^ tmp2[2][7:0];
+    assign roundKeyArr[3][0][7:0] = keyArr[3][0][7:0] ^ tmp2[3][7:0];
 
-    state_to_output #(4) state_to_output(wArr, w);
+    assign roundKeyArr[0][1][7:0] = keyArr[0][1][7:0] ^ roundKeyArr[0][0][7:0];
+    assign roundKeyArr[1][1][7:0] = keyArr[1][1][7:0] ^ roundKeyArr[1][0][7:0];
+    assign roundKeyArr[2][1][7:0] = keyArr[2][1][7:0] ^ roundKeyArr[2][0][7:0];
+    assign roundKeyArr[3][1][7:0] = keyArr[3][1][7:0] ^ roundKeyArr[3][0][7:0];
+
+    assign roundKeyArr[0][2][7:0] = keyArr[0][2][7:0] ^ roundKeyArr[0][1][7:0];
+    assign roundKeyArr[1][2][7:0] = keyArr[1][2][7:0] ^ roundKeyArr[1][1][7:0];
+    assign roundKeyArr[2][2][7:0] = keyArr[2][2][7:0] ^ roundKeyArr[2][1][7:0];
+    assign roundKeyArr[3][2][7:0] = keyArr[3][2][7:0] ^ roundKeyArr[3][1][7:0];
+
+    assign roundKeyArr[0][3][7:0] = keyArr[0][3][7:0] ^ roundKeyArr[0][2][7:0];
+    assign roundKeyArr[1][3][7:0] = keyArr[1][3][7:0] ^ roundKeyArr[1][2][7:0];
+    assign roundKeyArr[2][3][7:0] = keyArr[2][3][7:0] ^ roundKeyArr[2][2][7:0];
+    assign roundKeyArr[3][3][7:0] = keyArr[3][3][7:0] ^ roundKeyArr[3][2][7:0];
+
+    state_to_output #(4) state_to_output(roundKeyArr, roundKey);
 endmodule

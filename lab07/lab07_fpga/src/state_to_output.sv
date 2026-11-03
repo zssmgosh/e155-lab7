@@ -15,7 +15,6 @@ module state_to_output #(parameter COL=4) (input  logic [0:3][0:COL-1][7:0] a,
                                           output logic [(32*COL)-1:0]      y);
 
     genvar i;
-
     for (i=0; i<COL; i++) begin
         assign y[((COL-1-i)*32+24) +: 8] = a[0][i][7:0];
         assign y[((COL-1-i)*32+16) +: 8] = a[1][i][7:0];
