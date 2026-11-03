@@ -61,32 +61,46 @@ module aes_core(input  logic         clk,
                 output logic         done, 
                 output logic [127:0] cyphertext);
 
+	typedef enum logic [2:0] {START=3'b001, WAIT=3'b010, STOP=3'b100} statetype;
+	statetype state, nextState;
+	
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
-    logic [127:0] state, nextState, SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut;
-
-    counter #(1, 2) cycleCnter(.clk(clk), .reset(load), .enable(1'b1), .counter(cycleCnt));
-    counter #(4, 10) roundCnter(.clk(cycleCnt[0]), .reset(load), .enable(1'b1), .counter(roundCnt));
+    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut;
 
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
 
-    subbytes SB(.clk(clk), .a(state), .y(SBout));
+    subbytes SB(.clk(clk), .a(roundIn), .y(SBout));
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
     addroundkeys AR(.a(MCout), .word(expKey), .y(roundOut));
 
-    always_ff @(posedge clk)
+    always_ff @(posedge clk) begin
         if(load) begin
             roundIn <= plaintext;
             oldKey <= key;
+			state <= START;
 		end
-        else
-            if(NSen) begin
+        else begin
+			state <= nextState;
+            if(nextState==START) begin
                 roundIn <= roundOut;
                 oldKey <= expKey;
+				roundCnt <= roundCnt + 1;
 			end
+		end
+	end
+	
+	always_comb begin
+		case(state)
+			START: nextState = WAIT;
+			WAIT: if (roundCnt < 10) nextState = START; else nextState = STOP; // one cycle latency for subbytes and keyexpansion
+			STOP: nextState = STOP;
+			default: nextState = STOP;
+		endcase
+	end
 
     assign MCres = (roundCnt == 9) ? SRout : MCout;
-    assign cyphertext = (roundCnt == 10) ? roundIn : 0;
-	assign done = (roundCnt == 10);
+    assign cyphertext = roundOut;
+	assign done = (state == STOP);
 endmodule

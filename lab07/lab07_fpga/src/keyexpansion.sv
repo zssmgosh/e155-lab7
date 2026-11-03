@@ -5,11 +5,10 @@ module keyexpansion(input logic clk,
     logic [0:3][0:3][7:0] roundKeyArr, keyArr;
     logic [0:3][7:0] rcon;
     logic [0:3][7:0] tmp0, tmp1, tmp2;
-	genvar i, a, b;
 
-	for(i=0;i<3;i++) begin
-		assign rcon[i+1][7:0] = 8'b0;
-	end
+	assign rcon[1][7:0] = 8'b0;
+	assign rcon[2][7:0] = 8'b0;
+	assign rcon[3][7:0] = 8'b0;
 
     always_comb begin
         case(round)
@@ -39,7 +38,10 @@ module keyexpansion(input logic clk,
     subword subword(clk, tmp0, tmp1);
     
     // subword(rotateword)^rcon
-    assign tmp2 = tmp1 ^ rcon;
+    assign tmp2[0] = tmp1[0] ^ rcon[0];
+	assign tmp2[1] = tmp1[1] ^ rcon[1];
+	assign tmp2[2] = tmp1[2] ^ rcon[2];
+	assign tmp2[3] = tmp1[3] ^ rcon[3];
 
     assign roundKeyArr[0][0][7:0] = keyArr[0][0][7:0] ^ tmp2[0][7:0];
     assign roundKeyArr[1][0][7:0] = keyArr[1][0][7:0] ^ tmp2[1][7:0];
