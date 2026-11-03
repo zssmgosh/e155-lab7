@@ -13,7 +13,7 @@ module counter #(parameter N=23, MAX_COUNT=10000000)(
 			end
 		else 
 			if (enable)
-				if (counter > MAX_COUNT)
+				if (counter >= MAX_COUNT)
 					begin
 						counter <= 0;
 					end

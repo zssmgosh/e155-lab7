@@ -63,36 +63,30 @@ module aes_core(input  logic         clk,
 
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
-    logic SBen, SRen, MCen, ARen, KEen, NSen;
-    logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin, oldKey, expKey;
+    logic [127:0] state, nextState, SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut;
 
-    counter #(2, 5) cycleCnter(.clk(clk), .reset(load), .enable(1), .counter(cycleCnt));
-    counter #(4, 10) roundCnter(.clk(clk), .reset(load), .enable(cycleCnt == 5), .counter(roundCnt));
+    counter #(1, 2) cycleCnter(.clk(clk), .reset(load), .enable(1'b1), .counter(cycleCnt));
+    counter #(4, 10) roundCnter(.clk(cycleCnt[0]), .reset(load), .enable(1'b1), .counter(roundCnt));
 
-    controller controller(.clk(clk), .reset(load), .count(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
-    
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
 
     subbytes SB(.clk(clk), .a(state), .y(SBout));
-    shiftrows SR(.a(SRin), .y(SRout));
-    mixcolumns MC(.a(MCin), .y(MCout));
-    addroundkeys AR(.a(ARin), .word(expKey), .y(nextState));
+    shiftrows SR(.a(SBout), .y(SRout));
+    mixcolumns MC(.a(SRout), .y(MCout));
+    addroundkeys AR(.a(MCout), .word(expKey), .y(roundOut));
 
     always_ff @(posedge clk)
         if(load) begin
-            state <= plaintext;
+            roundIn <= plaintext;
             oldKey <= key;
 		end
         else
             if(NSen) begin
-                state <= nextState;
+                roundIn <= roundOut;
                 oldKey <= expKey;
 			end
 
-    assign MCres = (roundCnt == 9) ? MCin : MCout;
-    flopren #(128) SBSRflop(.clk, .reset(load), .en(SRen), .d(SBout), .q(SRin));
-    flopren #(128) SRMCflop(.clk, .reset(load), .en(MCen), .d(SRout), .q(MCin));
-    flopren #(128) MCARflop(.clk, .reset(load), .en(ARen), .d(MCres), .q(ARin));
-    assign cyphertext = (roundCnt == 9)? nextState: 0;
-	assign done = (roundCnt == 9);
+    assign MCres = (roundCnt == 9) ? SRout : MCout;
+    assign cyphertext = (roundCnt == 10) ? roundIn : 0;
+	assign done = (roundCnt == 10);
 endmodule
