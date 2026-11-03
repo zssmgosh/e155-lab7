@@ -66,18 +66,20 @@ module aes_core(input  logic         clk,
 	
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
-    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut;
-
+    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut, firstRoundIn;
+	
+	addroundkeys AR0(.a(plaintext), .word(oldKey), .y(firstRoundIn));
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
 
     subbytes SB(.clk(clk), .a(roundIn), .y(SBout));
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
-    addroundkeys AR(.a(MCout), .word(expKey), .y(roundOut));
+    addroundkeys AR(.a(MCres), .word(expKey), .y(roundOut));
 
     always_ff @(posedge clk) begin
         if(load) begin
-            roundIn <= plaintext;
+			roundCnt <= 0;
+            roundIn <= firstRoundIn;
             oldKey <= key;
 			state <= START;
 		end
@@ -101,6 +103,6 @@ module aes_core(input  logic         clk,
 	end
 
     assign MCres = (roundCnt == 9) ? SRout : MCout;
-    assign cyphertext = roundOut;
+    assign cyphertext = roundIn;
 	assign done = (state == STOP);
 endmodule
