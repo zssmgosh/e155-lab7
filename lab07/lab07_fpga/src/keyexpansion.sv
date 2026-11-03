@@ -1,8 +1,8 @@
-module keyexpansion(input logic clk, reset, en,
+module keyexpansion(input logic clk,
                     input logic [3:0] round,
                     input  logic [127:0] key,
                     output logic [127:0] roundKey);
-    logic [0:3][0:3] roundKeyArr, keyArr;
+    logic [0:3][0:3][7:0] roundKeyArr, keyArr;
     logic [0:3][7:0] rcon;
     logic [0:3][7:0] tmp0, tmp1, tmp2;
 	genvar i, a, b;
@@ -36,7 +36,7 @@ module keyexpansion(input logic clk, reset, en,
     assign tmp0[2][7:0] = keyArr[3][3][7:0];
     
     // subword(rotateword)
-    subword subword(clk, reset, en, tmp0, tmp1);
+    subword subword(clk, tmp0, tmp1);
     
     // subword(rotateword)^rcon
     assign tmp2 = tmp1 ^ rcon;

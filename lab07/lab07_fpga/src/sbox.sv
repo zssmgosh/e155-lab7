@@ -31,7 +31,7 @@ module sbox_sync(
   // This module is synchronous and will be inferred using BRAMs (Block RAMs)
   logic [7:0] sbox [0:255];
 
-  initial   $readmemh("sbox.txt", sbox);
+  initial   $readmemh("C:/Users/huahuang/Desktop/e155-lab7/lab07/lab07_fpga/src/sbox.txt", sbox);
 	
 	// Synchronous version
 	always_ff @(posedge clk) begin

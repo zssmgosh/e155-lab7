@@ -70,11 +70,19 @@ module input_to_state_tb();
         // Test 2: every byte holds its own position in the 128-bit value, so a
         // wrong answer shows exactly which byte ended up where.
         // TODO: fill in the expected grid, row by row.
-        check("numbered bytes", 128'h000102030405060708090a0b0c0d0e0f, 'x);
+        check("numbered bytes", 128'h000102030405060708090a0b0c0d0e0f,
+			  {8'h00, 8'h04, 8'h08, 8'h0c, 
+			   8'h01, 8'h05, 8'h09, 8'h0d, 
+			   8'h02, 8'h06, 8'h0a, 8'h0e, 
+			   8'h03, 8'h07, 8'h0b, 8'h0f});
 
         // Test 3: the Appendix B cipher key. You filled in this grid by hand in Part A.
         // TODO: fill in the expected grid, row by row.
-        check("Appendix B cipher key", 128'h2b7e151628aed2a6abf7158809cf4f3c, 'x);
+        check("Appendix B cipher key", 128'h2b7e151628aed2a6abf7158809cf4f3c,
+			  {8'h2b, 8'h28, 8'hab, 8'h09, 
+			   8'h7e, 8'hae, 8'hf7, 8'hcf, 
+			   8'h15, 8'hd2, 8'h15, 8'h4f, 
+			   8'h16, 8'ha6, 8'h88, 8'h3c});
 
         if (errors == 0) $display("PASSED: all %0d tests", tests);
         else             $display("FAILED: %0d of %0d tests", errors, tests);

@@ -63,11 +63,11 @@ module mixcolumns_tb();
 
         // Test 3: FIPS-197 Appendix B, Round 1, "After ShiftRows" -> "After MixColumns".
         // TODO: fill in both values. Read each grid column by column, as in Exercise 1.
-        check("Appendix B round 1", 128'hx, 128'hx);
+        check("Appendix B round 1", 128'hd4bf5d30e0b452aeb84111f11e2798e5, 128'h046681e5e0cb199a48f8d37a2806264c);
 
         // Test 4: FIPS-197 Appendix B, Round 2, "After ShiftRows" -> "After MixColumns".
         // TODO: fill in both values.
-        check("Appendix B round 2", 128'hx, 128'hx);
+        check("Appendix B round 2", 128'h49db873b453953897f02d2f177de961a, 128'h584dcaf11b4b5aacdbe7caa81b6bb0e5);
 
         if (errors == 0) $display("PASSED: all %0d tests", tests);
         else             $display("FAILED: %0d of %0d tests", errors, tests);

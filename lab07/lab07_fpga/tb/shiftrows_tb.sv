@@ -60,16 +60,16 @@ module shiftrows_tb();
         // Test 1: every byte holds its own position, S[r][c] = 4c + r, so a wrong
         // answer shows you exactly which byte ended up where.
         // TODO: work out the expected output by hand before you run anything.
-        check("numbered bytes", 128'h000102030405060708090a0b0c0d0e0f, 128'hx);
+        check("numbered bytes", 128'h000102030405060708090a0b0c0d0e0f, 128'h00050a0f04090e03080d02070c01060b);
 
         // Test 2: FIPS-197 Appendix B, Round 1, "After SubBytes" -> "After ShiftRows".
         // Appendix B prints the state as 4x4 grids. Read each grid column by column.
         // TODO: fill in both values.
-        check("Appendix B round 1", 128'hx, 128'hx);
+        check("Appendix B round 1", 128'hd42711aee0bf98f1b8b45de51e415230, 128'hd4bf5d30e0b452aeb84111f11e2798e5);
 
         // Test 3: FIPS-197 Appendix B, Round 2, "After SubBytes" -> "After ShiftRows".
         // TODO: fill in both values.
-        check("Appendix B round 2", 128'hx, 128'hx);
+        check("Appendix B round 2", 128'h49ded28945db96f17f39871a7702533b, 128'h49db873b453953897f02d2f177de961a);
 
         if (errors == 0) $display("PASSED: all %0d tests", tests);
         else             $display("FAILED: %0d of %0d tests", errors, tests);

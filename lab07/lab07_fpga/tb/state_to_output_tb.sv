@@ -58,7 +58,7 @@ module state_to_output_tb();
                8'h3d, 8'hf4, 8'hc6, 8'hf8,
                8'he3, 8'he2, 8'h8d, 8'h48,
                8'hbe, 8'h2b, 8'h2a, 8'h08},
-              128'hx);
+              128'h193de3bea0f4e22b9ac68d2ae9f84808);
 
         // Test 3: there and back again. Uses your input_to_state too.
         tests = tests + 1;

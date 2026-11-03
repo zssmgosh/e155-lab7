@@ -1,22 +1,4 @@
 /////////////////////////////////////////////
-// aes
-//   Top level module with SPI interface and SPI core
-/////////////////////////////////////////////
-
-module aes(input  logic clk,
-           input  logic sck, 
-           input  logic sdi,
-           output logic sdo,
-           input  logic load,
-           output logic done);
-                    
-    logic [127:0] key, plaintext, cyphertext;
-            
-    aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext);   
-    aes_core core(clk, load, key, plaintext, done, cyphertext);
-endmodule
-
-/////////////////////////////////////////////
 // aes_spi
 //   SPI interface.  Shifts in key and plaintext
 //   Captures ciphertext when done, then shifts it out
@@ -84,30 +66,33 @@ module aes_core(input  logic         clk,
     logic SBen, SRen, MCen, ARen, KEen, NSen;
     logic [127:0] state, nextState, SBout, SRin, SRout, MCin, MCout, MCres, ARin, oldKey, expKey;
 
-    counter #(2, 5) cycleCnter(.clk, .reset(load), .enable(1), .counter(cycleCnt));
-    counter #(4, 10) roundCnter(.clk, .reset(load), .enable(cycleCnt == 5), .counter(roundCnt));
+    counter #(2, 5) cycleCnter(.clk(clk), .reset(load), .enable(1), .counter(cycleCnt));
+    counter #(4, 10) roundCnter(.clk(clk), .reset(load), .enable(cycleCnt == 5), .counter(roundCnt));
 
-    controller controller(.clk, .reset(load), .count(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
+    controller controller(.clk(clk), .reset(load), .count(cycleCnt), .SBen, .SRen, .MCen, .ARen, .KEen, .NSen);
     
-    keyexpansion temp(.clk, .reset(load), .en(KEen), .key(), .round(roundCnt), .roundKey(expKey));
+    keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
 
-    subbytes SB(.clk, .reset(load), .en(SBen), .a(state), .y(SBout));
+    subbytes SB(.clk(clk), .a(state), .y(SBout));
     shiftrows SR(.a(SRin), .y(SRout));
     mixcolumns MC(.a(MCin), .y(MCout));
     addroundkeys AR(.a(ARin), .word(expKey), .y(nextState));
 
     always_ff @(posedge clk)
-        if(load)
+        if(load) begin
             state <= plaintext;
             oldKey <= key;
+		end
         else
-            if(NSen)
+            if(NSen) begin
                 state <= nextState;
                 oldKey <= expKey;
+			end
 
     assign MCres = (roundCnt == 9) ? MCin : MCout;
     flopren #(128) SBSRflop(.clk, .reset(load), .en(SRen), .d(SBout), .q(SRin));
     flopren #(128) SRMCflop(.clk, .reset(load), .en(MCen), .d(SRout), .q(MCin));
     flopren #(128) MCARflop(.clk, .reset(load), .en(ARen), .d(MCres), .q(ARin));
-    
+    assign cyphertext = (roundCnt == 9)? nextState: 0;
+	assign done = (roundCnt == 9);
 endmodule

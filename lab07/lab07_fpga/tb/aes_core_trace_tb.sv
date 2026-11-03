@@ -31,12 +31,12 @@ module aes_core_trace_tb();
     // state, using its hierarchical name (e.g. dut.state). This line will not
     // compile until you do.
     logic [127:0] state_probe, key_probe;
-    assign state_probe = dut.YOUR_STATE_REGISTER;
+    assign state_probe = dut.state;
 
     // Optional: also trace your round key. Point key_probe at your round key
     // register (e.g. dut.roundkey) and set TRACE_KEY to 1.
     localparam TRACE_KEY = 0;
-    assign key_probe = 'x;
+    assign key_probe = dut.expKey;
 
     // give up if done has not been asserted after this many cycles
     localparam MAX_CYCLES = 200;

@@ -5,11 +5,11 @@ module controller(input logic clk, reset,
         if(~reset)
             {SBen, SRen, MCen, ARen, KEen, NSen} <= 6'b0;
         else begin
-            SBen <= (count == 1);
-            SRen <= (count == 2);
-            MCen <= (count == 3);
-            ARen <= (count == 4);
-            KEen <= (count == 1);
-            NSen <= (count == 5);
+            SBen <= (count == 0);
+            SRen <= (count == 1);
+            MCen <= (count == 2);
+            ARen <= (count == 3);
+            KEen <= (count == 0);
+            NSen <= (count == 4);
         end
 endmodule
