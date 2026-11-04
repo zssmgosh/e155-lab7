@@ -45,6 +45,7 @@ module testbench_aes_core();
             $display("Testbench ran successfully");
         else $display("Error: cyphertext = %h, expected %h",
             cyphertext, expected);
+		#100
         $stop();
       end
     end

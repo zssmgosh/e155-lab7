@@ -61,27 +61,28 @@ module aes_core(input  logic         clk,
                 output logic         done, 
                 output logic [127:0] cyphertext);
 
-	typedef enum logic [2:0] {START=3'b001, WAIT=3'b010, STOP=3'b100} statetype;
+	typedef enum logic [3:0] {START=4'b0001, WAIT=4'b0010, STOP=4'b0100, FIRST=4'b1000} statetype;
 	statetype state, nextState;
 	
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
-    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut, firstRoundIn;
+    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut, firstRoundIn, AROut, ARin, ARKey;
 	
-	addroundkeys AR0(.a(plaintext), .word(oldKey), .y(firstRoundIn));
+	//addroundkeys AR0(.a(plaintext), .word(oldKey), .y(firstRoundIn));
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
-
+	assign ARin = (state == FIRST) ? plaintext : MCres;
+	assign ARKey = (state == FIRST) ? key : expKey;
     subbytes SB(.clk(clk), .a(roundIn), .y(SBout));
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
-    addroundkeys AR(.a(MCres), .word(expKey), .y(roundOut));
+    addroundkeys AR(.a(ARin), .word(ARKey), .y(AROut));
 
     always_ff @(posedge clk) begin
         if(load) begin
 			roundCnt <= 0;
-            roundIn <= firstRoundIn;
+            roundIn <= AROut;
             oldKey <= key;
-			state <= START;
+			state <= FIRST;
 		end
         else begin
 			state <= nextState;
@@ -98,11 +99,13 @@ module aes_core(input  logic         clk,
 			START: nextState = WAIT;
 			WAIT: if (roundCnt < 10) nextState = START; else nextState = STOP; // one cycle latency for subbytes and keyexpansion
 			STOP: nextState = STOP;
+			FIRST: nextState = WAIT;
 			default: nextState = STOP;
 		endcase
 	end
 
     assign MCres = (roundCnt == 9) ? SRout : MCout;
-    assign cyphertext = roundIn;
+    assign cyphertext = (state == WAIT)? AROut: roundIn;
 	assign done = (state == STOP);
+	assign roundOut = (state == STOP) ? roundIn : AROut;
 endmodule
