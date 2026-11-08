@@ -1,7 +1,9 @@
 module core_fsm(input logic clk, load,
-                input logic [127:0] plaintext, key, expKey, AROut, roundOut, MCres,
-                output logic [127:0] oldKey, roundIn, cyphertext, ARin, ARKey, 
-				input logic [3:0] roundCnt);
+                input logic [127:0] plaintext, key, expKey, AROut, MCres,
+                output logic [127:0] oldKey, roundIn, cyphertext, ARin, ARKey,
+				input logic [3:0] roundCnt, 
+				output logic done);
+	logic [127:0] roundOut;
 	
     typedef enum logic [3:0] {START=4'b0001, WAIT=4'b0010, STOP=4'b0100, FIRST=4'b1000} statetype;
 	statetype state, nextState;
