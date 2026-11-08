@@ -71,11 +71,9 @@ module aes_core(input  logic         clk,
     mixcolumns MC(.a(SRout), .y(MCout));
     addroundkeys AR(.a(ARin), .word(ARKey), .y(AROut));
 
-    core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .roundCnt(roundCnt), .oldKey(oldKey), .done(done));
+    core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .MCres(MCres), .roundOut(roundOut), .roundCnt(roundCnt), .roundIn(roundIn), .oldKey(oldKey), .cyphertext(cyphertext), .ARin(ARin), .ARKey(ARKey));
     
     assign MCres = (roundCnt == 9) ? SRout : MCout;
     assign done = (roundCnt >= 10);
 	assign roundOut = (roundCnt >= 10) ? roundIn : AROut;
-    assign ARin = (roundCnt == 0) ? plaintext : MCres;
-	assign ARKey = (roundCnt == 0) ? key : expKey;
 endmodule

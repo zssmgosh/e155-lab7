@@ -1,9 +1,7 @@
 module core_fsm(input logic clk, load,
-                input logic [127:0] plaintext, key, expKey, AROut,
-				input logic [127:0] roundOut,
-                output logic [127:0] oldKey, roundIn, 
-				output logic [3:0] roundCnt,
-                output logic done);
+                input logic [127:0] plaintext, key, expKey, AROut, roundOut, MCres,
+                output logic [127:0] oldKey, roundIn, cyphertext, ARin, ARKey, 
+				output logic [3:0] roundCnt);
 	
     typedef enum logic [3:0] {START=4'b0001, WAIT=4'b0010, STOP=4'b0100, FIRST=4'b1000} statetype;
 	statetype state, nextState;
@@ -36,4 +34,6 @@ module core_fsm(input logic clk, load,
 	end
 
 	assign cyphertext = (state == WAIT) ? AROut: roundIn;
+	assign ARin = (state == FIRST) ? plaintext : MCres;
+	assign ARKey = (state == FIRST) ? key : expKey;
 endmodule
