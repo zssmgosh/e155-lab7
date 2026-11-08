@@ -60,52 +60,22 @@ module aes_core(input  logic         clk,
                 input  logic [127:0] plaintext, 
                 output logic         done, 
                 output logic [127:0] cyphertext);
-
-	typedef enum logic [3:0] {START=4'b0001, WAIT=4'b0010, STOP=4'b0100, FIRST=4'b1000} statetype;
-	statetype state, nextState;
 	
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
     logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, roundOut, firstRoundIn, AROut, ARin, ARKey;
 	
-	//addroundkeys AR0(.a(plaintext), .word(oldKey), .y(firstRoundIn));
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
-	assign ARin = (state == FIRST) ? plaintext : MCres;
-	assign ARKey = (state == FIRST) ? key : expKey;
     subbytes SB(.clk(clk), .a(roundIn), .y(SBout));
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
     addroundkeys AR(.a(ARin), .word(ARKey), .y(AROut));
 
-    always_ff @(posedge clk) begin
-        if(load) begin
-			roundCnt <= 0;
-            roundIn <= AROut;
-            oldKey <= key;
-			state <= FIRST;
-		end
-        else begin
-			state <= nextState;
-            if(nextState==START) begin
-                roundIn <= roundOut;
-                oldKey <= expKey;
-				roundCnt <= roundCnt + 1;
-			end
-		end
-	end
-	
-	always_comb begin
-		case(state)
-			START: nextState = WAIT;
-			WAIT: if (roundCnt < 10) nextState = START; else nextState = STOP; // one cycle latency for subbytes and keyexpansion
-			STOP: nextState = STOP;
-			FIRST: nextState = WAIT;
-			default: nextState = STOP;
-		endcase
-	end
-
+    core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .roundCnt(roundCnt), .oldKey(oldKey), .done(done));
+    
     assign MCres = (roundCnt == 9) ? SRout : MCout;
-    assign cyphertext = (state == WAIT)? AROut: roundIn;
-	assign done = (state == STOP);
-	assign roundOut = (state == STOP) ? roundIn : AROut;
+    assign done = (roundCnt >= 10);
+	assign roundOut = (roundCnt >= 10) ? roundIn : AROut;
+    assign ARin = (roundCnt == 0) ? plaintext : MCres;
+	assign ARKey = (roundCnt == 0) ? key : expKey;
 endmodule
