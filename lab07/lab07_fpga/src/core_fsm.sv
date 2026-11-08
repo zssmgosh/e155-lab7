@@ -34,4 +34,6 @@ module core_fsm(input logic clk, load,
 	assign cyphertext = (state == WAIT) ? AROut: roundIn;
 	assign ARin = (state == FIRST) ? plaintext : MCres;
 	assign ARKey = (state == FIRST) ? key : expKey;
+	assign done = (state == STOP);
+	assign roundOut = (state == STOP) ? roundIn : AROut;
 endmodule

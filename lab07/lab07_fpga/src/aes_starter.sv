@@ -70,10 +70,8 @@ module aes_core(input  logic         clk,
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
     addroundkeys AR(.a(ARin), .word(ARKey), .y(AROut));
-    counter counter(.clk(clk), .load(load), .roundCnt(roundCnt));
+    counter #(3, 10) counter(.clk(clk), .load(load), .roundCnt(roundCnt));
     core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .MCres(MCres), .roundOut(roundOut), .roundCnt(roundCnt), .roundIn(roundIn), .oldKey(oldKey), .cyphertext(cyphertext), .ARin(ARin), .ARKey(ARKey));
     
     assign MCres = (roundCnt == 9) ? SRout : MCout;
-    assign done = (roundCnt >= 10);
-	assign roundOut = (roundCnt >= 10) ? roundIn : AROut;
 endmodule
