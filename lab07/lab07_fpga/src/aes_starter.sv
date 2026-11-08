@@ -63,15 +63,15 @@ module aes_core(input  logic         clk,
 	
     logic [2:0] cycleCnt;
     logic [3:0] roundCnt;
-    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, AROut, ARin, ARKey;
+    logic [127:0] SBout, SRout, MCout, MCres, oldKey, expKey, roundIn, AROut, ARin, ARKey, start;
 	
     keyexpansion temp(.clk(clk), .key(oldKey), .round(roundCnt), .roundKey(expKey));
     subbytes SB(.clk(clk), .a(roundIn), .y(SBout));
     shiftrows SR(.a(SBout), .y(SRout));
     mixcolumns MC(.a(SRout), .y(MCout));
     addroundkeys AR(.a(ARin), .word(ARKey), .y(AROut));
-    counter #(3, 10) counter(.clk(clk), .load(load), .roundCnt(roundCnt));
-    core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .MCres(MCres), .roundCnt(roundCnt), .roundIn(roundIn), .oldKey(oldKey), .cyphertext(cyphertext), .ARin(ARin), .ARKey(ARKey), .done(done));
+    counter #(3, 10) counter(.clk(start), .reset(load), .enable(1'b1), .counter(roundCnt));
+    core_fsm coreFSM(.clk(clk), .load(load), .plaintext(plaintext), .key(key), .expKey(expKey), .AROut(AROut), .MCres(MCres), .roundCnt(roundCnt), .roundIn(roundIn), .oldKey(oldKey), .cyphertext(cyphertext), .ARin(ARin), .ARKey(ARKey), .done(done), .start(start));
     
     assign MCres = (roundCnt == 9) ? SRout : MCout;
 endmodule
