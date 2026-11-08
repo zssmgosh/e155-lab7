@@ -1,14 +1,13 @@
 module core_fsm(input logic clk, load,
                 input logic [127:0] plaintext, key, expKey, AROut, roundOut, MCres,
                 output logic [127:0] oldKey, roundIn, cyphertext, ARin, ARKey, 
-				output logic [3:0] roundCnt);
+				input logic [3:0] roundCnt);
 	
     typedef enum logic [3:0] {START=4'b0001, WAIT=4'b0010, STOP=4'b0100, FIRST=4'b1000} statetype;
 	statetype state, nextState;
 
     always_ff @(posedge clk) begin
         if(load) begin
-			roundCnt <= 0;
             roundIn <= AROut;
             oldKey <= key;
 			state <= FIRST;
@@ -18,7 +17,6 @@ module core_fsm(input logic clk, load,
             if(nextState==START) begin
                 roundIn <= roundOut;
                 oldKey <= expKey;
-				roundCnt <= roundCnt + 1;
 			end
 		end
 	end
